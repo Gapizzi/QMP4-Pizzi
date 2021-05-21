@@ -1,0 +1,63 @@
+public class CondicionClimatica{     	//Solo puedo obtener informacion de las condiciones climaticas 10 veces por dia para no generar gastos extras.
+	
+	private LocalDate fecha;
+	private int limiteLlamadosDiarios;
+	private int llamadosHoy;
+
+	public condicionClimatica(int limiteLlamadosDiarios){ //Ajustarse a distintas condiciones economicas.
+		fecha = LocalDate.now();
+		this.limiteLlamadosDiarios = limiteLlamadosDiarios;
+	}	
+	
+	public List<Map<String, Object>> obtenerInfoClima(){
+		verificarYActualizarFecha();
+		verificarLimiteDeLLamados();
+		AccuWeatherAPI apiClima = new AccuWeatherAPI();
+		List<Map<String, Object>> condicionesClimaticas = apiClima.getWeather(“Buenos Aires, Argentina”);  
+		return condicionesClimaticas;
+	}
+
+	private void verificarYActualizarFecha(){
+		if(fecha==LocalDate.now()) {
+			return;
+		} else {
+			fecha = LocalDate.now();
+			llamadosHoy = 0;
+		}
+	}
+
+	private void verificarLimiteDeLlamados(){
+		if(limitesLlamados > llamadosHoy){
+			throw new LimiteLlamadosDiariosException("No se puede obtener informacion del clima mas de 10 veces al dia");
+		}
+	}
+}
+
+public Class GeneradorSugerencias{
+	private CondicionClimatica condicionClimatica;
+	private List<Map<String, Object>> condicionesClimaticas;
+	privete LocalDate? ultimaGeneracion;			//Quiero guardar la hora de la ultima vez que pedi info de las condiciones climaticas para no pedir nuevamente si las anteriores todavia estan vigentes
+	private static GeneradorSugerencias INSTANCE = new GeneradorSugerencias();
+
+	private GeneradorSugerencias(CondicionClimatica condicionClimatica){
+		this.condicionClimatica = condicionClimatica;
+		condicionesClimaticas = condicionClimatica.obtenerInfoClima();
+		ultimaGeneracion = LocalDate.now();
+	}
+
+	public static getInstance(){
+		return INSTANCE;
+	}
+
+	public List<Sugerencia> filtrarSugerenciaPorClima(){
+		verificarYActualizarCondicionClimatica();			
+		return GeneradorSugerencias.generarSugerencias.stream().filter(sugerencia - > sugerencia.cumpleCondicionClimaticaNecesaria(condicionesClimaticas));
+	}
+
+	private void verificarYActualizarCondicionClimatica(){
+		if(Localdate.now()-ultimaGeneracion()>tiempoMaximo){
+			condicionClimatica.obtenerInfoClima();
+			ultimaGeneracion = LocalDate.now();
+		}
+	}
+}
